@@ -4,7 +4,6 @@ var rectDrawn = false;
 
 function setup() {
 	createCanvas(640, 480);
-	frameRate(30);
 }
 
 function draw() {
@@ -49,7 +48,7 @@ function readBlob(opt_startByte, opt_stopByte) {
         while( placemark <= limit ){
             output = dv.getUint32(placemark);  
             bytes[i] = output.toString(16);
-            placemark += 1;
+            placemark += 4;
             i++;
         }
         rectDrawn = false;

@@ -1,37 +1,40 @@
 var bytes = [];
 var isMapped = false;
 var rectDrawn = false;
+var arcProp = {};
 
 function setup() {
-	createCanvas(640, 480);
+	createCanvas(640, 480); //make panel to draw on in the site
+    stroke('red'); //change line color to red 
 }
 
 function draw() {
-	if(!isMapped){
+	if(!isMapped){ //if new file hasnt been mapped yet map it 
 		bytes = mapValues();
-	} else if(!rectDrawn){
-		for (var i = 0; i < bytes.length; i += 10) {
-			rect(random(width), random(height), bytes[i], bytes[i]);
-		}
+	} else if(!rectDrawn){ //if panel hasnt been drawn draw it 
+        for (var i = 0; i < bytes.length; i++) { //cycle through bites and create the arc using the object properites
+            arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, bytes[i].stop);
+        }
 		rectDrawn = true;
 	}
 }
 
-function mapValues(){
+function mapValues(){ //map byte values to degrees and add to the arc properties then return the array with the arc properties
 	var mappedValues = [];
 	for (var i = 0; i < bytes.length; i++) {
-		var m = map(int(bytes[i]), 00000000, 99999999, 10, 110);
-		mappedValues[i] = floor(m);
+		var m = map(int(bytes[i]), 00000000, 99999999, 0, 360);
+		mappedValues[i] = m;
+        mappedValues[i] = arcArray(mappedValues[i]);
 	}
 	isMapped = true;
 	return mappedValues;
 }
 
-function readBlob(opt_startByte, opt_stopByte) {
+function readBlob(opt_startByte, opt_stopByte) { //read file byte by byte on input change
 
     var files = document.getElementById('files').files;
     var i = 0;
-    if (!files.length) {
+    if (!files.length) { //if no files yell at user to put one
       alert('Please select a file!');
       return;
     }
@@ -41,9 +44,10 @@ function readBlob(opt_startByte, opt_stopByte) {
     var stop = parseInt(opt_stopByte) || file.size - 1;
     bytes = []; //clear array
 
+
     var reader = new FileReader();
 
-    reader.onload = function(evt) {
+    reader.onload = function(evt) { //when the reader loads the file read byte by byte and output as a string
         var placemark = 0, dv = new DataView(this.result), limit = dv.byteLength - 4, output;
         while( placemark <= limit ){
             output = dv.getUint32(placemark);  
@@ -58,3 +62,20 @@ function readBlob(opt_startByte, opt_stopByte) {
     var blob = file.slice(start, stop + 1);
     reader.readAsArrayBuffer(blob);
   }
+
+function arcArray(bytesToBePlaced){ //get properties for the arc and return them to be placed in an array
+    arcHeightAndWidth = random(400);
+    arcStart = random(360);
+    if(arcStart + bytesToBePlaced >= 360){ //convert to radians and account set any stop values 361+ to 0+
+        arcStop = (arcStart - 360) + bytesToBePlaced;
+        arcStart = arcStart * (PI/180);
+        arcStop = arcStart * (PI/180);
+    } else { //just convert to radians and set arc stop
+        arcStop = arcStart + bytesToBePlaced;
+        arcStart = arcStart * (PI/180);
+        arcStop = arcStop * (PI/180);
+    }
+    
+    return arcProp = {HAndW:arcHeightAndWidth, start:arcStart, stop:arcStop} //return arc object properties
+}
+

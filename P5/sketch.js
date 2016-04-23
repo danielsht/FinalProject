@@ -1,22 +1,18 @@
 var bytes = [];
-var isMapped = false;
-var rectDrawn = false;
 var arcProp = {};
 
 function setup() {
 	createCanvas(640, 480); //make panel to draw on in the site
     stroke('red'); //change line color to red 
+    noFill(); //doesnt allow arcs to fill to center like a pie chart thus covering other arcs
 }
 
 function draw() {
-	if(!isMapped){ //if new file hasnt been mapped yet map it 
-		bytes = mapValues();
-	} else if(!rectDrawn){ //if panel hasnt been drawn draw it 
-        for (var i = 0; i < bytes.length; i++) { //cycle through bites and create the arc using the object properites
-            arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, bytes[i].stop);
-        }
-		rectDrawn = true;
-	}
+    background(0);
+    for (var i = 0; i < bytes.length; i++) { //cycle through bites and create the arc using the object properites
+        arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, bytes[i].stop);
+    }
+    animateArcs();
 }
 
 function mapValues(){ //map byte values to degrees and add to the arc properties then return the array with the arc properties
@@ -26,7 +22,6 @@ function mapValues(){ //map byte values to degrees and add to the arc properties
 		mappedValues[i] = m;
         mappedValues[i] = arcArray(mappedValues[i]);
 	}
-	isMapped = true;
 	return mappedValues;
 }
 
@@ -55,8 +50,7 @@ function readBlob(opt_startByte, opt_stopByte) { //read file byte by byte on inp
             placemark += 4;
             i++;
         }
-        rectDrawn = false;
-    	isMapped = false;     
+        bytes = mapValues(); //map values in bytes for arcs 
     };
 
     var blob = file.slice(start, stop + 1);
@@ -64,8 +58,8 @@ function readBlob(opt_startByte, opt_stopByte) { //read file byte by byte on inp
   }
 
 function arcArray(bytesToBePlaced){ //get properties for the arc and return them to be placed in an array
-    arcHeightAndWidth = random(400);
-    arcStart = random(360);
+    arcHeightAndWidth = random(0, 400);
+    arcStart = random(0, 360);
     if(arcStart + bytesToBePlaced >= 360){ //convert to radians and account set any stop values 361+ to 0+
         arcStop = (arcStart - 360) + bytesToBePlaced;
         arcStart = arcStart * (PI/180);
@@ -77,5 +71,12 @@ function arcArray(bytesToBePlaced){ //get properties for the arc and return them
     }
     
     return arcProp = {HAndW:arcHeightAndWidth, start:arcStart, stop:arcStop} //return arc object properties
+}
+
+function animateArcs(){
+    for (var i = 0; i < bytes.length; i++) {
+        bytes[i].start += (1 * (PI/180));
+        bytes[i].stop += (1 * (PI/180));
+    }
 }
 

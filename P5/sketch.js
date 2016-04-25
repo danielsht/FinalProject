@@ -1,5 +1,9 @@
 var bytes = [];
 var arcProp = {};
+var mySound;
+var songDuration;
+var intervalChange;
+var fileSize;
 
 function setup() {
 	createCanvas(640, 480); //make panel to draw on in the site
@@ -25,18 +29,32 @@ function mapValues(){ //map byte values to degrees and add to the arc properties
 	return mappedValues;
 }
 
-function readBlob(opt_startByte, opt_stopByte) { //read file byte by byte on input change
+function newFileRead(){
+    var file = getFiles();
+    fileSize = file.size - 1;
 
+    mySound = loadSound(file, playMusic);
+    readBlob(0, 10000, file);
+}
+
+function getFiles(){
     var files = document.getElementById('files').files;
-    var i = 0;
-    if (!files.length) { //if no files yell at user to put one
-      alert('Please select a file!');
-      return;
+    if(!files.length){
+        alert('Please select a file!');
+        return;
     }
 
-    var file = files[0];
+    var file = files[0]
+
+    return file;
+}
+
+function readBlob(opt_startByte, opt_stopByte, files) { //read file byte by byte on input change
+
+    var file = files || getFiles();
     var start = parseInt(opt_startByte) || 0;
     var stop = parseInt(opt_stopByte) || file.size - 1;
+    var i = 0;
     bytes = []; //clear array
 
 
@@ -80,3 +98,9 @@ function animateArcs(){
     }
 }
 
+function playMusic(){
+    mySound.setVolume(1.0);
+    mySound.play();
+    songDuration = mySound.duration();
+    intervalChange = fileSize / songDuration;
+}

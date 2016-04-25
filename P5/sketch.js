@@ -1,14 +1,18 @@
 var bytes = [];
 var arcProp = {};
 var mySound;
+var sound = false;
 var songDuration;
 var intervalChange;
 var fileSize;
+var byteCounter;
 
 function setup() {
 	createCanvas(640, 480); //make panel to draw on in the site
     stroke('red'); //change line color to red 
     noFill(); //doesnt allow arcs to fill to center like a pie chart thus covering other arcs
+    byteCounter = 10000;
+    frameRate();
 }
 
 function draw() {
@@ -17,6 +21,9 @@ function draw() {
         arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, bytes[i].stop);
     }
     animateArcs();
+    if(frameCount % 10 == 9 && sound){
+        readBlob(byteCounter, byteCounter += 10000)
+    }
 }
 
 function mapValues(){ //map byte values to degrees and add to the arc properties then return the array with the arc properties
@@ -102,5 +109,6 @@ function playMusic(){
     mySound.setVolume(1.0);
     mySound.play();
     songDuration = mySound.duration();
-    intervalChange = fileSize / songDuration;
+    intervalChange = (fileSize / (songDuration * 1000)) + 1000;
+    sound = true;
 }

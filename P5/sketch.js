@@ -2,22 +2,19 @@ var bytes = [];
 var arcProp = {};
 var mySound;
 var sound = false;
-var songDuration, intervalChange, changeOnFrame, fileSize, byteCounter;
+var songDuration, intervalChange, changeOnFrame, fileSize, byteCounter, arcRadius;
 
 function setup() {
     createCanvas(640, 480); //make panel to draw on in the site
-    stroke('red'); //change line color to red 
-    noFill(); //doesnt allow arcs to fill to center like a pie chart thus covering other arcs
     byteCounter = 10000;
     frameRate();
     changeOnFrame = 60;
+    arcRadius = 400;
 }
 
 function draw() {
     background(0);
-    for (var i = 0; i < bytes.length; i++) { //cycle through bites and create the arc using the object properites
-        arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, animateArcs(bytes[i]));
-    }
+
     if(frameCount % changeOnFrame == (changeOnFrame - 1) && sound){
         readBlob(byteCounter, byteCounter += intervalChange);
         if(mySound.currentTime() == 0){
@@ -25,19 +22,25 @@ function draw() {
         }
     }
     //uncomment for waveform not complete yet
-    // if(sound){
-    //     var waveform = mySound.getPeaks();
-    //     fill(0, 0, 255);
-    //     stroke(0);
-    //     strokeWeight(1);
-    //     beginShape();
-    //     for (var i = 0; i< waveform.length; i++){
-    //         vertex(map(i, 0, waveform.length, 0, width), map(waveform[i], -1, 1, height, 0));
-    //     }
-    //     endShape();
+    if(sound){
+        noFill();
+        stroke('red');
+        for (var i = 0; i < bytes.length; i++) { //cycle through bites and create the arc using the object properites
+            arc(width/2, height/2, bytes[i].HAndW, bytes[i].HAndW, bytes[i].start, bytes[i].stop);
+        }
+        animateArcs();
 
-    //     drawCursor();
-    // }
+        var waveform = mySound.getPeaks();
+        stroke(0, 0, 255, 99);
+        strokeWeight(1);
+        beginShape();
+        for (var i = 0; i< waveform.length; i++){
+            vertex(map(i, 0, waveform.length, 100, width - 100), map(waveform[i], -1, 1, height, 0));
+        }
+        endShape();
+
+        drawCursor();
+    }
 }
 
 function mapValues(){ //map byte values to degrees and add to the arc properties then return the array with the arc properties
@@ -85,7 +88,7 @@ function readBlob(opt_startByte, opt_stopByte, files) { //read file byte by byte
         var placemark = 0, dv = new DataView(this.result), limit = dv.byteLength - 4, output;
         while( placemark <= limit ){
             output = dv.getUint32(placemark);  
-            bytes[i] = output;
+            bytes[i] = output.toString(16);
             placemark += 4;
             i++;
         }
@@ -97,7 +100,7 @@ function readBlob(opt_startByte, opt_stopByte, files) { //read file byte by byte
   }
 
 function arcArray(bytesToBePlaced){ //get properties for the arc and return them to be placed in an array
-    arcHeightAndWidth = random(0, 400);
+    arcHeightAndWidth = random(0, arcRadius);
     arcStart = random(0, 360);
     if(arcStart + bytesToBePlaced >= 360){ //convert to radians and account set any stop values 361+ to 0+
         arcStop = (arcStart - 360) + bytesToBePlaced;
@@ -109,14 +112,14 @@ function arcArray(bytesToBePlaced){ //get properties for the arc and return them
         arcStop = arcStop * (PI/180);
     }
     
-    return arcProp = {HAndW:arcHeightAndWidth, start:arcStart, stop:arcStop, currentLength:arcStart} //return arc object properties
+    return arcProp = {HAndW:arcHeightAndWidth, start:arcStart, stop:arcStop} //return arc object properties
 }
 
-function animateArcs(maxSize){
-    if(maxSize.currentLength <= maxSize.stop){
-        maxSize.currentLength += ((maxSize.stop/changeOnFrame) * (PI/180));
+function animateArcs(){
+    for (var i = 0; i < bytes.length; i++) {
+        bytes[i].start += (1 * (PI/180));
+        bytes[i].stop += (1 * (PI/180));
     }
-    return maxSize.currentLength;
 }
 
 function playMusic(){
@@ -129,6 +132,6 @@ function playMusic(){
 
 function drawCursor() {
   noStroke();
-  fill(0,255,0);
-  rect(map(mySound.currentTime(), 0, mySound.duration(), 0, width), 0, 5, height);
+  fill(0,255,0, 75);
+  rect(map(mySound.currentTime(), 0, mySound.duration(), 100, width - 100), (height/2 - 150), 2, 300);
 }

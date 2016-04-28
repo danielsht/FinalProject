@@ -2,7 +2,8 @@ var bytes = [];
 var arcProp = {};
 var mySound;
 var sound = false;
-var songDuration, intervalChange, changeOnFrame, fileSize, byteCounter, arcRadius;
+var songDuration, intervalChange, changeOnFrame, fileSize, byteCounter, arcRadius, tags;
+var jsmediatags = window.jsmediatags;
 
 function setup() {
     createCanvas(640, 480); //make panel to draw on in the site
@@ -40,6 +41,14 @@ function draw() {
         endShape();
 
         drawCursor();
+
+        stroke(55);
+        line(width/2 - 300, height/2, width/2 + 300, height/2);
+        textSize(24);
+        textAlign(RIGHT);
+        fill(55);
+        text(tags.title, width/2 + 300, height/2);
+        text(tags.artist, width/2 + 300, height/2 + 24);
     }
 }
 
@@ -59,6 +68,12 @@ function newFileRead(){
 
     mySound = loadSound(file, playMusic);
     readBlob(0, 10000, file);
+
+    jsmediatags.read(file, {
+        onSuccess: function(tag) {
+            tags = tag.tags;
+        }
+    });
 }
 
 function getFiles(){
